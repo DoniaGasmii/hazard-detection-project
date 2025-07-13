@@ -9,7 +9,6 @@ Example Usage (bash):
         --yolo_path path/to/output_labels/
 """
 
-
 import os
 import json
 import argparse
