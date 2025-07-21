@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # Load Qwen model and processor once
-QWEN_MODEL_ID = "Qwen/Qwen-VL-Max"
+QWEN_MODEL_ID = "Qwen/Qwen2.5-VL-7B-Instruct"
 qwen_processor = AutoProcessor.from_pretrained(QWEN_MODEL_ID)
 qwen_model = AutoModelForVision2Seq.from_pretrained(
     QWEN_MODEL_ID,
