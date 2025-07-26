@@ -83,3 +83,24 @@ def annotate_image_with_qwen(image_path, msgs, verbose=False):
         draw_bboxes(img, bboxes)
 
     return bboxes
+
+
+def convert_qwen_to_yolo(bboxes, img_width, img_height):
+    yolo_lines = []
+
+    for box in bboxes:
+        label = box["label"]
+        if label not in CLASS_MAP:
+            continue  # skip unknown labels
+
+        class_id = CLASS_MAP[label]
+        x1, y1, x2, y2 = box["bbox_2d"]
+
+        x_center = ((x1 + x2) / 2) / img_width
+        y_center = ((y1 + y2) / 2) / img_height
+        width = (x2 - x1) / img_width
+        height = (y2 - y1) / img_height
+
+        yolo_lines.append(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}")
+
+    return yolo_lines
