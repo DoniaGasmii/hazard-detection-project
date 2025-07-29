@@ -70,7 +70,7 @@ def annotate_image_with_qwen(image_path, msgs, verbose=False):
     ).to(qwen_model.device)
 
     with torch.no_grad():
-        out_ids = qwen_model.generate(**inputs, max_new_tokens=1000)
+        out_ids = qwen_model.generate(**inputs, max_new_tokens=500)
 
     output = qwen_processor.batch_decode(
         out_ids[:, inputs.input_ids.shape[-1]:],
@@ -85,7 +85,7 @@ def annotate_image_with_qwen(image_path, msgs, verbose=False):
     return bboxes
 
 
-def convert_qwen_to_yolo(bboxes, img_width, img_height):
+def convert_qwen_to_yolo(bboxes, img_width, img_height, CLASS_MAP):
     yolo_lines = []
 
     for box in bboxes:
