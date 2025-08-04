@@ -1,0 +1,13 @@
+Worker
+Tower crane
+Hanging hook
+Vehicle crane
+Roller
+Bulldozer
+Excavator
+Truck
+Loader
+Pump truck
+Concrete mixer truck
+Pile driver
+Other vehicle

@@ -1,0 +1,71 @@
+{
+    "images": [],
+    "annotations": [],
+    "categories": [
+        {
+            "id": 0,
+            "name": "Worker",
+            "supercategory": "object"
+        },
+        {
+            "id": 1,
+            "name": "Tower crane",
+            "supercategory": "object"
+        },
+        {
+            "id": 2,
+            "name": "Hanging hook",
+            "supercategory": "object"
+        },
+        {
+            "id": 3,
+            "name": "Vehicle crane",
+            "supercategory": "object"
+        },
+        {
+            "id": 4,
+            "name": "Roller",
+            "supercategory": "object"
+        },
+        {
+            "id": 5,
+            "name": "Bulldozer",
+            "supercategory": "object"
+        },
+        {
+            "id": 6,
+            "name": "Excavator",
+            "supercategory": "object"
+        },
+        {
+            "id": 7,
+            "name": "Truck",
+            "supercategory": "object"
+        },
+        {
+            "id": 8,
+            "name": "Loader",
+            "supercategory": "object"
+        },
+        {
+            "id": 9,
+            "name": "Pump truck",
+            "supercategory": "object"
+        },
+        {
+            "id": 10,
+            "name": "Concrete mixer truck",
+            "supercategory": "object"
+        },
+        {
+            "id": 11,
+            "name": "Pile driver",
+            "supercategory": "object"
+        },
+        {
+            "id": 12,
+            "name": "Other vehicle",
+            "supercategory": "object"
+        }
+    ]
+}
