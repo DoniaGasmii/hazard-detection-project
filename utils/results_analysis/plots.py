@@ -15,7 +15,7 @@ def plot_metric_comparison(
     save_path=None
 ):
     """
-    Plot any metric over epochs for multiple training runs using a pastel 'Paired' palette.
+    Plot any metric over epochs for multiple training runs.
 
     Args:
         csv_paths (list of str): Paths to training logs (CSV files).
