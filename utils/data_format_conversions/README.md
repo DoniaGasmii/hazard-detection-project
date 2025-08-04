@@ -34,7 +34,9 @@ dataset/
 Each `.txt` file contains bounding boxes in YOLO format:
 `<class_id> <x_center> <y_center> <width> <height>`
 All values must be normalized to [0, 1].
+
 To test the script you can use the datasample in utils/test_image!
+
 ▶️**Usage:**
 ```
 python utils/data_format_conversions/yolo_to_coco.py \
