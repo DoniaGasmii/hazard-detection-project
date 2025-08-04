@@ -1,0 +1,21 @@
+path: /test_image/yolo
+train: images/train
+val: images/val
+test: images/test
+
+nc: 13
+
+names:
+  0: Worker
+  1: Tower crane
+  2: Hanging hook
+  3: Vehicle crane
+  4: Roller
+  5: Bulldozer
+  6: Excavator
+  7: Truck
+  8: Loader
+  9: Pump truck
+  10: Concrete mixer truck
+  11: Pile driver
+  12: Other vehicle
