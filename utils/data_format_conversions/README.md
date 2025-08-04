@@ -54,3 +54,17 @@ python utils/data_format_conversions/yolo_to_coco.py \
 
 ✅ **Output:**
 A COCO-compliant annotations.json file. It should be saved in dataset/images because the script doesn't copy the images we use the same folder as the yolo one to avoid unncessary complexity (efficient conversion time and storage usage).
+
+-------------------------------------------------------------------------------------------
+
+## 📄 COCO to YOLO Conversion Script
+
+-------------------------------------------------------------------------------------------
+
+## 📄 YOLO to VOC Conversion Script
+
+-------------------------------------------------------------------------------------------
+
+## 📄 VOC to YOLO Conversion Script
+
+-------------------------------------------------------------------------------------------
