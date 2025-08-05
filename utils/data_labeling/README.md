@@ -3,6 +3,8 @@
 This folder contains helper scripts and resources for generating and managing annotations for the **hazard detection** project.  
 The overall labeling strategy follows an **active learning process**, where the model selectively queries the most informative samples, and an *oracle* provides the labels.
 
+<img width="578" height="425" alt="image" src="https://github.com/user-attachments/assets/3b4d5c5c-bd69-415c-bbdb-32fc0d47b22c" />
+
 ## Labeling strategy
 
 In our setup:
@@ -27,3 +29,4 @@ This script automates the creation of **pseudo‑labeled datasets** by:
 1. Running inference on a set of unlabeled images using multiple **class‑specific Roboflow models** (e.g., helmet, harness, ladder).
 2. Collecting predictions from each model and merging them into **unified YOLO TXT annotations** according to a shared class mapping.
 3. Saving results into a YOLO‑style directory structure:
+
