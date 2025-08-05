@@ -16,25 +16,25 @@ CLASS_MAP = {
     "barricade": 5,
     "guardrail": 6,
     "edge": 7,
-    "Ladder": 8
+    "ladder": 8
 }
 
 MODELS = {
-    # "worker_model": {
-    #     "project": "worker-yssgk",
-    #     "version": 1,
-    #     "class_names": ["worker"]
-    # },
+    "worker_model": {
+        "project": "worker-yssgk",
+        "version": 1,
+        "class_names": ["worker"]
+    },
     "helmet_model": {
-        "project": "helmet-3sbkd",
+        "project": "helmet-msnht",
         "version": 1,
         "class_names": ["helmet"]
     },
-    # "harness_model": {
-    #     "project": "harness-xmpgb",
-    #     "version": 2,
-    #     "class_names": ["harness"]
-    # },
+    "harness_model": {
+        "project": "harness-xmpgb",
+        "version": 2,
+        "class_names": ["harness"]
+    },
     "rope_model": {
         "project": "rope-ngeva",
         "version": 2,
@@ -66,7 +66,7 @@ MODELS = {
 
 IMAGES_DIR = "data_sample/raw_images"
 OUTPUT_DIR = "data_sample/labeled_yolo_dataset"
-CONF_THRESHOLD = 0.3
+CONF_THRESHOLD = 0.5
 
 # ==========================
 # SCRIPT LOGIC
@@ -112,7 +112,7 @@ def main():
                     print(f"Skipping non-object-detection prediction: {det.get('prediction_type', 'unknown')}")
                     continue
 
-                detected_class = det["class"]
+                detected_class = det["class"].lower()
                 if detected_class not in CLASS_MAP:
                     print(f"Warning: Detected class '{detected_class}' not in CLASS_MAP. Skipping.")
                     continue
