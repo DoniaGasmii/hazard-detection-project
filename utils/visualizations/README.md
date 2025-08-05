@@ -32,3 +32,27 @@ python visualize_yolo.py \
   --image ../data_labeling/data_sample/labeled_yolo_dataset/images/all/04.jpg \
   --label ../data_labeling/data_sample/labeled_yolo_dataset/labels/all/04.txt
 ```
+### 3. `training_results.py`
+
+Functions to **plot YOLO training metrics** such as:
+
+- Training & validation loss curves (box loss, objectness loss, classification loss)
+- mAP (mean Average Precision) evolution over epochs
+- Precision–Recall curves
+- Class-wise performance breakdown
+- Training iterations comparison between two models.
+
+Can be run after training to generate visual summaries from YOLO’s `results.csv` and other log files.
+
+---
+
+### 4. `inference_results.py`
+
+Tools to **visualize and analyze inference outputs**, including:
+
+- Plotting detection confidence histograms
+- Showing side-by-side comparisons of **ground truth** vs **predictions**
+- Visualizing multiple inference samples in a grid format
+- Filtering and plotting only high-confidence or specific-class detections
+
+Supports YOLO prediction output formats (`.txt` label files or `.json` export).
