@@ -1,13 +1,13 @@
 # Rewriting the script without markdown-style triple backticks to fix syntax error.
 
 # Full script with all augmentation functions implemented so far.
-
+import argparse
 import os
 import cv2
 import numpy as np
 import random
 import albumentations as A
-from visualizations.draw import show_before_after
+from visualizations.draw import *
 
 # ------------------------------ Albumentations Wrapper ------------------------------
 
@@ -179,3 +179,4 @@ def apply_mosaic(img_dir, lbl_dir, load_fn, output_size=640, verbose=False):
         show_before_after(final_img, final_img, [], final_bboxes)
 
     return final_img, final_bboxes
+
