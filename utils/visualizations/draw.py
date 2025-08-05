@@ -1,8 +1,14 @@
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 
-# By default, use Paired colormap (supports 12 visually distinct classes)
-PAIRED_COLORS = plt.cm.get_cmap('Paired', 12).colors  # RGBA floats
+# Get the colormap in a version-safe way
+try:
+    # Newer Matplotlib
+    PAIRED_COLORS = matplotlib.colormaps['Paired'].resampled(12).colors
+except AttributeError:
+    # Older Matplotlib
+    PAIRED_COLORS = plt.get_cmap('Paired', 12).colors
 
 # Uncomment below if your dataset has more than 12 classes
 # TAB20_COLORS = plt.cm.get_cmap('tab20', 20).colors  # Supports up to 20 classes
@@ -65,3 +71,28 @@ def show_before_after(original, augmented, original_boxes, augmented_boxes):
 
     plt.tight_layout()
     plt.show()
+
+
+def yolo_to_xyxy(label_path, img_width, img_height):
+    """
+    Convert YOLO labels to [x_min, y_min, x_max, y_max, class_id] format.
+
+    Args:
+        label_path (str): Path to YOLO label file.
+        img_width (int): Image width in pixels.
+        img_height (int): Image height in pixels.
+
+    Returns:
+        List[List[float]]: Bounding boxes in xyxy format.
+    """
+    boxes = []
+    with open(label_path, "r") as f:
+        for line in f:
+            cls, x_c, y_c, w, h = map(float, line.strip().split())
+            x_min = (x_c - w / 2) * img_width
+            y_min = (y_c - h / 2) * img_height
+            x_max = (x_c + w / 2) * img_width
+            y_max = (y_c + h / 2) * img_height
+            boxes.append([x_min, y_min, x_max, y_max, int(cls)])
+    return boxes
+
