@@ -9,8 +9,8 @@ The overall labeling strategy follows an **active learning process**, where the 
 
 In our setup:
 - **The oracle** is composed of:
-  - Multiple **class‑specific object detection models** (one per hazard type, or multi‑class models where applicable).
-  - A **human review step** to validate and correct model predictions before they are added to the training set.
+  - Multiple **class‑specific object detection models** trained either locally or on Roboflow (one per hazard type, or multi‑class models where applicable).
+  - A **human review step** to validate and correct model predictions before they are added to the training set. Correcting labels is still manual labor but faster, easier and less expensive than annotating the whole dataset.
 - The process:
   1. Start with a pool of unlabeled images.
   2. Run each class‑specific model to generate predictions.
@@ -29,4 +29,5 @@ This script automates the creation of **pseudo‑labeled datasets** by:
 1. Running inference on a set of unlabeled images using multiple **class‑specific Roboflow models** (e.g., helmet, harness, ladder).
 2. Collecting predictions from each model and merging them into **unified YOLO TXT annotations** according to a shared class mapping.
 3. Saving results into a YOLO‑style directory structure:
+
 
