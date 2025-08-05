@@ -37,7 +37,7 @@ This script automates the creation of **pseudo‑labeled datasets** by:
 **Quick run (default settings):**
 ```bash
 python pseudo_label_merger.py
-
+```
 **Customize for your own setup:**
 
 Before running, open the script and update:
@@ -55,6 +55,7 @@ Once configured, place your raw images in `IMAGES_DIR` and run the script.
 ## Data sample
 
 The `data_sample` folder contains a small subset of images (`raw_images/`) for testing and debugging.  
+
 
 
 
