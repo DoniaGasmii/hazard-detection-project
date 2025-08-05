@@ -8,7 +8,7 @@ The overall labeling strategy follows an **active learning process**, where the 
 ## Labeling strategy
 
 In our setup:
-- **The oracle** is composed of:
+- **The labeling oracle** is composed of:
   - Multiple **class‑specific object detection models** trained either locally or on Roboflow (one per hazard type, or multi‑class models where applicable).
   - A **human review step** to validate and correct model predictions before they are added to the training set. Correcting labels is still manual labor but faster, easier and less expensive than annotating the whole dataset.
 - The process:
@@ -55,5 +55,6 @@ Once configured, place your raw images in `IMAGES_DIR` and run the script.
 ## Data sample
 
 The `data_sample` folder contains a small subset of images (`raw_images/`) for testing and debugging.  
+
 
 
