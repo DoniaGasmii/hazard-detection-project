@@ -24,11 +24,11 @@ A command-line script to load an image and its YOLO label file, draw bounding bo
 From the terminal:
 ```bash
 python visualize_yolo.py --image path/to/image.jpg --label path/to/label.txt
-```bash
+```
 
 Example:
-```bash
+```
 python visualize_yolo.py \
   --image ../data_labeling/data_sample/labeled_yolo_dataset/images/all/04.jpg \
   --label ../data_labeling/data_sample/labeled_yolo_dataset/labels/all/04.txt
-```bash
+```
