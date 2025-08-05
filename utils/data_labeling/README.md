@@ -16,7 +16,7 @@ In our setup:
   2. Run each class‑specific model to generate predictions.
   3. Merge predictions into a **unified multi‑class YOLO dataset**.
   4. Manually review and fix incorrect labels.
-  5. Retrain the unified model and repeat the loop, querying only the most valuable samples.
+  5. Retrain the unified model and repeat the loop, **querying only the most valuable samples (the best next samples needed to improve the model will be the new pool)**.
 
 This approach speeds up labeling, reduces human effort, and ensures higher quality data by combining **automated pseudo‑labeling** and **human‑in‑the‑loop correction**.
 
@@ -29,5 +29,6 @@ This script automates the creation of **pseudo‑labeled datasets** by:
 1. Running inference on a set of unlabeled images using multiple **class‑specific Roboflow models** (e.g., helmet, harness, ladder).
 2. Collecting predictions from each model and merging them into **unified YOLO TXT annotations** according to a shared class mapping.
 3. Saving results into a YOLO‑style directory structure:
+
 
 
