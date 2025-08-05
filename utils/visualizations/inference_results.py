@@ -5,6 +5,119 @@ import numpy as np
 import matplotlib.pyplot as plt
 from draw import *
 from typing import List
+import pandas as pd
+import seaborn as sns
+import json
+from pathlib import Path
+
+def compare_inference_results(*result_paths, output_dir=None):
+    """
+    Compare object detection benchmark results for multiple models.
+
+    Parameters:
+    - result_paths: paths to result files (CSV or JSON). Each file should contain
+      metrics such as 'mAP50', 'mAP50-95', 'precision', 'recall', 'f1', 'inference_time'.
+    - output_dir: directory to save plots (optional).
+    """
+    sns.set_theme(style="whitegrid", palette="Paired")
+
+    # Load all results
+    all_results = []
+    for path in result_paths:
+        path = Path(path)
+        if path.suffix.lower() == ".csv":
+            df = pd.read_csv(path)
+        elif path.suffix.lower() == ".json":
+            with open(path, "r") as f:
+                data = json.load(f)
+            df = pd.DataFrame([data])
+        else:
+            raise ValueError(f"Unsupported file format: {path}")
+
+        # Add model name from file name
+        df["model"] = path.stem
+        all_results.append(df)
+
+    # Merge into one DataFrame
+    results_df = pd.concat(all_results, ignore_index=True)
+
+    # Ensure numeric columns
+    numeric_cols = ["mAP50", "mAP50-95", "precision", "recall", "f1", "inference_time"]
+    for col in numeric_cols:
+        if col in results_df.columns:
+            results_df[col] = pd.to_numeric(results_df[col], errors="coerce")
+
+    print("\n=== Benchmark Comparison Table ===\n")
+    print(results_df[["model"] + numeric_cols])
+
+    # --- Visualization 1: Bar charts for each metric ---
+    for metric in numeric_cols:
+        if metric in results_df.columns:
+            plt.figure(figsize=(8, 5))
+            sns.barplot(data=results_df, x="model", y=metric)
+            plt.title(f"Model Comparison - {metric}")
+            plt.ylabel(metric)
+            plt.xlabel("Model")
+            plt.tight_layout()
+            if output_dir:
+                plt.savefig(Path(output_dir) / f"{metric}_comparison.png", dpi=300)
+            plt.show()
+
+    # --- Visualization 2: Precision vs Recall Scatter ---
+    if {"precision", "recall"}.issubset(results_df.columns):
+        plt.figure(figsize=(6, 6))
+        sns.scatterplot(
+            data=results_df,
+            x="precision",
+            y="recall",
+            hue="model",
+            size="mAP50" if "mAP50" in results_df.columns else None,
+            sizes=(50, 300),
+            palette="Paired",
+            legend=True
+        )
+        plt.title("Precision vs Recall")
+        plt.tight_layout()
+        if output_dir:
+            plt.savefig(Path(output_dir) / "precision_vs_recall.png", dpi=300)
+        plt.show()
+
+    # --- Visualization 3: Radar chart for all metrics ---
+    radar_metrics = [m for m in numeric_cols if m in results_df.columns]
+    if radar_metrics:
+        from math import pi
+
+        # Normalize data for radar
+        df_norm = results_df.copy()
+        for m in radar_metrics:
+            max_val = df_norm[m].max()
+            if max_val > 0:
+                df_norm[m] = df_norm[m] / max_val
+
+        labels = radar_metrics
+        num_vars = len(labels)
+
+        for _, row in df_norm.iterrows():
+            values = row[labels].tolist()
+            values += values[:1]  # close the loop
+            angles = [n / float(num_vars) * 2 * pi for n in range(num_vars)]
+            angles += angles[:1]
+
+            plt.figure(figsize=(6, 6))
+            ax = plt.subplot(111, polar=True)
+            plt.xticks(angles[:-1], labels)
+            ax.plot(angles, values, linewidth=2, linestyle='solid', label=row["model"])
+            ax.fill(angles, values, alpha=0.25)
+            plt.title(f"Radar Chart - {row['model']}")
+            plt.legend(loc="upper right", bbox_to_anchor=(0.1, 0.1))
+            if output_dir:
+                plt.savefig(Path(output_dir) / f"{row['model']}_radar.png", dpi=300)
+            plt.show()
+
+    return results_df
+
+
+
 
 def plot_confidence_histogram(pred_labels_dir: str):
     """

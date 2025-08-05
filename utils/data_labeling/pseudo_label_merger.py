@@ -9,6 +9,8 @@ API_KEY = "wK2zDNvQOIzgQKj8nGMs"
 
 CLASS_MAP = {
     "worker": 0,
+    "human": 0,
+    '------------------------------': 1,
     "helmet": 1,
     "harness": 2,
     "rope": 3,
@@ -66,7 +68,7 @@ MODELS = {
 
 IMAGES_DIR = "data_sample/raw_images"
 OUTPUT_DIR = "data_sample/labeled_yolo_dataset"
-CONF_THRESHOLD = 0.5
+CONF_THRESHOLD = 0.7
 
 # ==========================
 # SCRIPT LOGIC
