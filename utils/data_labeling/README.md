@@ -68,18 +68,18 @@ This script automates **pseudo-labeled datasets** using multiple class-specific 
 **Quick run:**
 ```bash
 python pseudo_label_merger.py
-
+```
 **Before running**
 
 Edit the script to set:
-
+```
 - `API_KEY`: your Roboflow private key  
 - `CLASS_MAP`: dictionary of your unified class IDs  
 - `MODELS`: list of Roboflow project slugs, version numbers, and classes  
 - `IMAGES_DIR`: path to unlabeled images  
 - `OUTPUT_DIR`: where the labeled YOLO dataset will be written  
 - `CONF_THRESHOLD`: (optional) minimum confidence for keeping detections  
-
+```
 ---
 
 **Output structure**
@@ -89,7 +89,7 @@ OUTPUT_DIR/
 ├── images/   # copies of your input images
 ├── labels/   # YOLO .txt labels (merged)
 └── data.yaml # dataset stub for YOLO training (you should set it up)
-
+```
 ### 2. Open-vocabulary Oracle → `autolabel.py`
 
 This script uses an **open-vocabulary detector** (GroundingDINO backend by default) to auto-label images based on text prompts and class aliases.
@@ -108,7 +108,7 @@ python -m utils.data_labeling.labeling.autolabel \
   --config configs/labeling/construction_safety.yaml \
   --source utils/data_labeling/raw_images \
   --out runs/autolabel/construction
-
+```
 **Config file: `configs/labeling/construction_safety.yaml`**
 
 - Defines the **9 hazard classes** and their aliases.  
@@ -126,5 +126,6 @@ runs/autolabel/construction/
 │   ├── img2.txt
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
+```
 
 
