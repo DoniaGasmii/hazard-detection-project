@@ -69,17 +69,14 @@ This script automates **pseudo-labeled datasets** using multiple class-specific 
 ```bash
 python pseudo_label_merger.py
 ```
-**Before running**
+**Before running, edit the script to set:**
 
-Edit the script to set:
-```
-- `API_KEY`: your Roboflow private key  
-- `CLASS_MAP`: dictionary of your unified class IDs  
-- `MODELS`: list of Roboflow project slugs, version numbers, and classes  
-- `IMAGES_DIR`: path to unlabeled images  
-- `OUTPUT_DIR`: where the labeled YOLO dataset will be written  
-- `CONF_THRESHOLD`: (optional) minimum confidence for keeping detections  
-```
+- **`API_KEY`** → your Roboflow private key  
+- **`CLASS_MAP`** → dictionary of your unified class IDs  
+- **`MODELS`** → list of Roboflow project slugs, version numbers, and classes  
+- **`IMAGES_DIR`** → path to unlabeled images  
+- **`OUTPUT_DIR`** → where the labeled YOLO dataset will be written  
+- **`CONF_THRESHOLD`** → *(optional)* minimum confidence for keeping detections  
 ---
 
 **Output structure**
@@ -127,6 +124,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
