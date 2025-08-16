@@ -48,16 +48,82 @@ This allows bootstrapping labels for *all nine hazard classes at once*.
 
 ## Current scripts
 
-### `pseudo_label_merger.py`
-Automates **pseudo-labeled datasets** using class-specific models:
-1. Runs inference on unlabeled images with multiple Roboflow models.
-2. Collects predictions and merges them into **unified YOLO TXT annotations**.
-3. Saves results into a YOLO-style dataset.
+We provide two complementary labeling oracles:
+
+---
+
+### 1. Class-specific Oracle → `pseudo_label_merger.py`
+
+This script automates **pseudo-labeled datasets** using multiple class-specific models (YOLO/Roboflow):
+
+1. Runs inference on unlabeled images with each hazard-specific model (e.g., helmet, harness, ladder).  
+2. Collects predictions from all models.  
+3. Merges them into **unified YOLO TXT annotations** following a shared class map.  
+4. Saves results into a YOLO-style dataset structure.
 
 **Purpose:**  
-- Bootstrap labeled data from multiple weak or specialized models.  
-- Acts as **Step 2 & 3** in the active learning loop.
+- Bootstrap a labeled dataset when you already have specialized detectors.  
+- Acts as the **oracle** in the active learning loop.
 
 **Quick run:**
 ```bash
 python pseudo_label_merger.py
+
+**Before running**
+
+Edit the script to set:
+
+- `API_KEY`: your Roboflow private key  
+- `CLASS_MAP`: dictionary of your unified class IDs  
+- `MODELS`: list of Roboflow project slugs, version numbers, and classes  
+- `IMAGES_DIR`: path to unlabeled images  
+- `OUTPUT_DIR`: where the labeled YOLO dataset will be written  
+- `CONF_THRESHOLD`: (optional) minimum confidence for keeping detections  
+
+---
+
+**Output structure**
+
+```bash
+OUTPUT_DIR/
+├── images/   # copies of your input images
+├── labels/   # YOLO .txt labels (merged)
+└── data.yaml # dataset stub for YOLO training (you should set it up)
+
+### 2. Open-vocabulary Oracle → `autolabel.py`
+
+This script uses an **open-vocabulary detector** (GroundingDINO backend by default) to auto-label images based on text prompts and class aliases.
+
+1. Prompts with a list of **aliases** (e.g., `helmet`, `hard hat`, `safety helmet`).  
+2. The VLM outputs bounding boxes + phrases.  
+3. Aliases are mapped to a **fixed YOLO class list** via `alias_map`.  
+4. Writes YOLO `.txt` labels for each image.  
+
+---
+
+**Quick run:**
+
+```bash
+python -m utils.data_labeling.labeling.autolabel \
+  --config configs/labeling/construction_safety.yaml \
+  --source utils/data_labeling/raw_images \
+  --out runs/autolabel/construction
+
+**Config file: `configs/labeling/construction_safety.yaml`**
+
+- Defines the **9 hazard classes** and their aliases.  
+- Sets thresholds (`box_thr`, `text_thr`) and backend model paths (`weights_path`, `config_path`).  
+- Aliases collapse into one class ID via `alias_map`.  
+
+---
+
+**Output structure**
+
+```bash
+runs/autolabel/construction/
+├── labels/
+│   ├── img1.txt
+│   ├── img2.txt
+│   └── ...
+└── data.yaml   # dataset stub for YOLO training
+
