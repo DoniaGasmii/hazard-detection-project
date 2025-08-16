@@ -14,9 +14,11 @@ def write_yolo_labels(img_path, detections: Detections, alias_map: dict, out_dir
     w, h = Image.open(img_path).size
     lines = []
     for det in detections:
-        if det.label not in alias_map:
+        name = det.label
+        if name not in alias_map:
             continue
-        cls_id = alias_map[det.label]
+        cls_id = alias_map[name]
         x1, y1, x2, y2 = det.bbox_xyxy
         lines.append(to_yolo_line(cls_id, x1, y1, x2, y2, w, h))
+    # ALWAYS create a file (even if empty)
     (out / (Path(img_path).stem + ".txt")).write_text("".join(lines))

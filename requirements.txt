@@ -6,5 +6,4 @@ torchvision
 pyyaml
 tqdm
 roboflow
-groundingdino==0.1.0
 Pillow

@@ -1,10 +1,10 @@
 backend:
-  # relative to repo root; code below resolves it robustly
   weights_path: models/groundingdino/groundingdino_swint_ogc.pth
   config_path:  models/groundingdino/GroundingDINO_SwinT_OGC.py
   box_thr: 0.30
   text_thr: 0.25
   device: cuda
+
 
 classes:
   names:
