@@ -100,6 +100,20 @@ This script uses an **open-vocabulary detector** (GroundingDINO backend by defau
 
 **Quick run:**
 
+**Download model + config:**
+```bash
+# Create the models folder if it doesn’t exist
+mkdir -p models/groundingdino
+
+# Download pretrained GroundingDINO weights
+wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth \
+     -O models/groundingdino/groundingdino_swint_ogc.pth
+
+# Download the GroundingDINO config file
+wget https://raw.githubusercontent.com/IDEA-Research/GroundingDINO/main/groundingdino/config/GroundingDINO_SwinT_OGC.py \
+     -O models/groundingdino/GroundingDINO_SwinT_OGC.py
+```
+
 ```bash
 python -m utils.data_labeling.vlm_labeling.autolabel \
   --config configs/labeling/fall_hazard_objects.yaml \
@@ -124,6 +138,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
