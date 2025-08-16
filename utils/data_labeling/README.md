@@ -112,7 +112,7 @@ pip install pycocotools-windows
 mkdir -p models/groundingdino
 
 # Download pretrained GroundingDINO weights
-wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth \
+wget https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swint_ogc.pth \
      -O models/groundingdino/groundingdino_swint_ogc.pth
 
 # Download the GroundingDINO config file
@@ -141,6 +141,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
