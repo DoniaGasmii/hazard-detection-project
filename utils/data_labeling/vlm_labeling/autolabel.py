@@ -9,87 +9,96 @@ from PIL import Image
 from groundingdino.util.inference import load_image, annotate
 from .backends.groundingdino_backend import GroundingDINOBackend
 from .io_yolo import write_yolo_labels
+from .postprocess import classwise_nms  # NEW
+import time
 
 BACKENDS = {"groundingdino": GroundingDINOBackend}
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", required=True, help="YAML config with backend + classes/aliases")
-    parser.add_argument("--source", required=True, help="Folder with images (searched recursively)")
-    parser.add_argument("--out", default="runs/autolabel", help="Output run directory")
+    parser.add_argument("--config", required=True)
+    parser.add_argument("--source", required=True)
+    parser.add_argument("--out", default="runs/autolabel")
     parser.add_argument("--backend", default="groundingdino", choices=BACKENDS.keys())
-    parser.add_argument("--save", action="store_true", help="Save visualization images under out/viz")
+    parser.add_argument("--save", action="store_true", help="save visualization under out/viz")
+    parser.add_argument("--nms-iou", type=float, default=0.5, help="IoU threshold for class-wise NMS")
+    parser.add_argument("--min-rel-area", type=float, default=0.0, help="drop boxes smaller than this fraction of image area (e.g., 0.002)")
     args = parser.parse_args()
 
-    # Load config
     with open(args.config, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
-    # Init backend (handles CPU fallback internally if you added it there)
     backend_cls = BACKENDS[args.backend]
     backend = backend_cls(**cfg["backend"])
 
-    # Prompts / alias map
-    prompts = cfg["classes"]["aliases"]
-    alias_map = cfg["classes"]["alias_map"]
+    class_names = cfg["classes"]["names"]
+    prompts = cfg["classes"]["aliases"]          # list of alias phrases to prompt
+    alias_map = cfg["classes"]["alias_map"]      # phrase -> class_id
 
-    # Discover images
+    # discover images
     src_path = Path(args.source).resolve()
     exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".JPG", ".JPEG", ".PNG", ".BMP", ".WEBP"}
     images = sorted([p for p in src_path.rglob("*") if p.suffix in exts])
-
     print(f"[autolabel] scanning: {src_path}")
     print(f"[autolabel] found {len(images)} images in {src_path}")
 
-    # Output dirs
     out_dir = Path(args.out)
     labels_dir = out_dir / "labels"
     labels_dir.mkdir(parents=True, exist_ok=True)
-
     viz_dir = out_dir / "viz"
     if args.save:
         viz_dir.mkdir(parents=True, exist_ok=True)
-
+    
+    start_time = time.time()
     for img in images:
-        # Load image (GroundingDINO helper returns (path_str, np.ndarray RGB))
         _, image_rgb = load_image(str(img))
 
-        # Predict
+        # raw detections from backend (still using phrases)
         dets = backend.predict(image_rgb, prompts)
 
-        # Debug line: how many detections and what phrases
-        raw_phrases = [d.label for d in dets]
-        kept = [d for d in dets if d.label in alias_map]
-        preview = raw_phrases[:6]
-        suffix = "..." if len(raw_phrases) > 6 else ""
-        print(f"[autolabel] {img.name}: {len(dets)} det(s), kept {len(kept)} | phrases={preview}{suffix}")
+        # post-process: alias filter + collapse to canonical + class-wise NMS
+        W, H = Image.open(img).size
+        kept = classwise_nms(
+            dets, alias_map, class_names,
+            iou_thr=args.nms_iou,
+            min_rel_area=args.min_rel_area,
+            img_wh=(W, H),
+        )
 
-        # Write YOLO labels (your writer should always create the .txt, even if empty)
-        write_yolo_labels(img, kept, alias_map, labels_dir.as_posix())
+        # debug
+        print(f"[autolabel] {img.name}: raw={len(dets)} kept={len(kept)}")
 
-        # Optional visualization
-        if args.save and dets:
+        # write YOLO labels with canonical class IDs
+        # build a lightweight view compatible with your writer
+        class Simple:
+            def __init__(self, k):  # k is PPDet
+                self.label = k.label
+                self.bbox_xyxy = k.bbox_xyxy
+                self.score = k.score
+                self.cls_id = k.cls_id
+        kept_view = [Simple(k) for k in kept]
+
+        # Slight tweak: your writer expects alias_map lookups by phrase.
+        # We can create a tiny alias_map for canonical names:
+        canon_alias_map = {class_names[i]: i for i in range(len(class_names))}
+        write_yolo_labels(img, kept_view, canon_alias_map, labels_dir.as_posix())
+
+        # visualization (canonical names only)
+        if args.save and kept:
             try:
-                # GroundingDINO annotate() expects torch tensors for boxes/logits
-                boxes_np = np.array([d.bbox_xyxy for d in dets], dtype=np.float32)
-                logits_np = np.array([d.score for d in dets], dtype=np.float32)
-                boxes_t = torch.from_numpy(boxes_np) if len(boxes_np) else torch.empty((0, 4), dtype=torch.float32)
-                logits_t = torch.from_numpy(logits_np) if len(logits_np) else torch.empty((0,), dtype=torch.float32)
-
+                boxes_np = np.array([k.bbox_xyxy for k in kept], dtype=np.float32)
+                logits_np = np.array([k.score for k in kept], dtype=np.float32)
+                boxes_t = torch.from_numpy(boxes_np)
+                logits_t = torch.from_numpy(logits_np)
+                phrases = [f"{k.label} {k.score:.2f}" for k in kept]  # canonical name
                 img_rgb = np.array(Image.open(img).convert("RGB"))
-                annotated = annotate(
-                    image_source=img_rgb,
-                    boxes=boxes_t,
-                    logits=logits_t,
-                    phrases=raw_phrases,  # list[str]
-                )
+                annotated = annotate(image_source=img_rgb, boxes=boxes_t, logits=logits_t, phrases=phrases)
                 Image.fromarray(annotated).save(viz_dir / img.name)
             except Exception as e:
                 print(f"[autolabel][viz] failed for {img.name}: {e}")
-
+    
     print(f"Done. Labels saved in {labels_dir}")
-
-
-if __name__ == "__main__":
-    main()
+    elapsed = time.time() - start_time
+    print(f"[autolabel] processed {len(images)} images in {elapsed:.2f}s "
+      f"({elapsed/len(images):.3f}s per image on average)")
