@@ -90,7 +90,7 @@ OUTPUT_DIR/
 ├── labels/   # YOLO .txt labels (merged)
 └── data.yaml # dataset stub for YOLO training (you should set it up)
 ```
-### 2. Open-vocabulary Oracle → `autolabel.py`
+### 2. Open-vocabulary Oracle → `vlm_labeling/autolabel.py`
 
 This script uses an **open-vocabulary detector** (GroundingDINO backend by default) to auto-label images based on text prompts and class aliases.
 
@@ -127,5 +127,6 @@ runs/autolabel/construction/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
