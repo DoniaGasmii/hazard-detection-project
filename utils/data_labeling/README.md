@@ -116,8 +116,8 @@ wget https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_
      -O models/groundingdino/groundingdino_swint_ogc.pth
 
 # Download the GroundingDINO config file
-wget https://raw.githubusercontent.com/IDEA-Research/GroundingDINO/main/groundingdino/config/GroundingDINO_SwinT_OGC.py \
-     -O models/groundingdino/GroundingDINO_SwinT_OGC.py
+curl -L https://raw.githubusercontent.com/IDEA-Research/GroundingDINO/main/groundingdino/config/GroundingDINO_SwinT_OGC.py ^
+  -o models\groundingdino\GroundingDINO_SwinT_OGC.py
 ```
 
 ```bash
@@ -141,6 +141,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
