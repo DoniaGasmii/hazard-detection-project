@@ -108,7 +108,8 @@ pip install pycocotools-windows
 ```
 
 ```bash
-python -m utils.data_labeling.vlm_labeling.autolabel --config configs/labeling/fall_hazard_objects.yaml --source utils/data_labeling/datasample/raw_images --out utils/data_labeling/datasample/dino_labels
+python -m utils.data_labeling.vlm_labeling.autolabel --config configs/labeling/fall_hazard_objects.yaml --source utils/data_labeling/datasample/raw_images --out utils/data_labeling/datasample/dino_labels --save-viz
+
 ```
 **Config file: `configs/labeling/fall_hazard_objects.yaml`**
 
@@ -128,6 +129,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
