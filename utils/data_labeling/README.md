@@ -105,11 +105,11 @@ This script uses an **open-vocabulary detector** (GroundingDINO backend by defau
 
 ```bash
 python -m utils.data_labeling.labeling.autolabel \
-  --config configs/labeling/construction_safety.yaml \
+  --config configs/labeling/fall_hazard_objects.yaml \
   --source utils/data_labeling/raw_images \
   --out runs/autolabel/construction
 ```
-**Config file: `configs/labeling/construction_safety.yaml`**
+**Config file: `configs/labeling/fall_hazard_objects.yaml`**
 
 - Defines the **9 hazard classes** and their aliases.  
 - Sets thresholds (`box_thr`, `text_thr`) and backend model paths (`weights_path`, `config_path`).  
@@ -127,6 +127,7 @@ runs/autolabel/construction/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
