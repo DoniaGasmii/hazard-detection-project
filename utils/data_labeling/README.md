@@ -104,7 +104,7 @@ This script uses an **open-vocabulary detector** (GroundingDINO backend by defau
 python -m utils.data_labeling.vlm_labeling.autolabel \
   --config configs/labeling/fall_hazard_objects.yaml \
   --source utils/data_labeling/datasample/raw_images \
-  --out utils/data_labeling/datasample/autolabel/dino
+  --out utils/data_labeling/datasample/dino_labels
 ```
 **Config file: `configs/labeling/fall_hazard_objects.yaml`**
 
@@ -124,6 +124,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
