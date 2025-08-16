@@ -1,0 +1,115 @@
+backend:
+  # relative to repo root; code below resolves it robustly
+  weights_path: models/groundingdino/groundingdino_swint_ogc.pth
+  config_path:  models/groundingdino/GroundingDINO_SwinT_OGC.py
+  box_thr: 0.30
+  text_thr: 0.25
+  device: cuda
+
+classes:
+  names:
+    - person
+    - helmet
+    - ladder
+    - tools
+    - scaffolding
+    - harness
+    - harness rope
+    - guardrail
+    - open edge
+
+  aliases:
+    - person
+    - human
+    - worker
+    - construction worker
+
+    - helmet
+    - safety helmet
+    - hard hat
+    - construction helmet
+
+    - ladder
+    - construction ladder
+    - step ladder
+    - bench
+    - stair ladder
+
+    - tool
+    - hammer
+    - wrench
+    - screwdriver
+    - drill
+    - construction tool
+
+    - scaffolding
+    - scaffold
+    - staging
+    - construction scaffold
+
+    - harness
+    - safety harness
+    - protective harness
+
+    - harness rope
+    - safety rope
+    - harness belt
+    - lanyard
+
+    - guardrail
+    - safety rail
+    - barrier
+    - handrail
+
+    - open edge
+    - roof edge
+    - edge without guardrail
+    - unprotected edge
+
+  alias_map:
+    person: 0
+    human: 0
+    worker: 0
+    construction worker: 0
+
+    helmet: 1
+    safety helmet: 1
+    hard hat: 1
+    construction helmet: 1
+
+    ladder: 2
+    construction ladder: 2
+    step ladder: 2
+    bench: 2
+    stair ladder: 2
+
+    tool: 3
+    hammer: 3
+    wrench: 3
+    screwdriver: 3
+    drill: 3
+    construction tool: 3
+
+    scaffolding: 4
+    scaffold: 4
+    staging: 4
+    construction scaffold: 4
+
+    harness: 5
+    safety harness: 5
+    protective harness: 5
+
+    harness rope: 6
+    safety rope: 6
+    harness belt: 6
+    lanyard: 6
+
+    guardrail: 7
+    safety rail: 7
+    barrier: 7
+    handrail: 7
+
+    open edge: 8
+    roof edge: 8
+    edge without guardrail: 8
+    unprotected edge: 8
