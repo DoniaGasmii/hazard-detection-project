@@ -100,6 +100,10 @@ This script uses an **open-vocabulary detector** (GroundingDINO backend by defau
 
 **Quick run:**
 
+**Before starting make sure to install requirements:**
+```bash
+pip install -r requirements.txt
+```
 **Download model + config:**
 ```bash
 # Create the models folder if it doesn’t exist
@@ -135,6 +139,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
