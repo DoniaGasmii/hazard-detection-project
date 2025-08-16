@@ -42,7 +42,7 @@ This reduces human effort by letting multiple small models act as the oracle.
   4. Save YOLO `.txt` labels automatically.
   5. Human review as usual.
 
-This allows bootstrapping labels for *all nine hazard classes at once*.
+This allows bootstrapping labels for *all objects at once*.
 
 ---
 
@@ -126,4 +126,5 @@ runs/autolabel/construction/
 │   ├── img2.txt
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
+
 
