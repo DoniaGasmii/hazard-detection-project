@@ -104,10 +104,10 @@ This script uses an **open-vocabulary detector** (GroundingDINO backend by defau
 **Quick run:**
 
 ```bash
-python -m utils.data_labeling.labeling.autolabel \
+python -m utils.data_labeling.vlm_labeling.autolabel \
   --config configs/labeling/fall_hazard_objects.yaml \
-  --source utils/data_labeling/raw_images \
-  --out runs/autolabel/construction
+  --source utils/data_labeling/datasample/raw_images \
+  --out utils/data_labeling/datasample/autolabel/dino
 ```
 **Config file: `configs/labeling/fall_hazard_objects.yaml`**
 
@@ -120,13 +120,14 @@ python -m utils.data_labeling.labeling.autolabel \
 **Output structure**
 
 ```bash
-runs/autolabel/construction/
+datasample/autolabel/dino/
 ├── labels/
 │   ├── img1.txt
 │   ├── img2.txt
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
