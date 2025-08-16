@@ -106,19 +106,6 @@ pip install git+https://github.com/IDEA-Research/GroundingDINO.git
 pip install opencv-python pillow pyyaml shapely yacs addict timm==0.9.12 transformers==4.40.0 scikit-image matplotlib
 pip install pycocotools-windows
 ```
-**Download model + config:**
-```bash
-# Create the models folder if it doesn’t exist
-mkdir -p models/groundingdino
-
-# Download pretrained GroundingDINO weights
-wget https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swint_ogc.pth \
-     -O models/groundingdino/groundingdino_swint_ogc.pth
-
-# Download the GroundingDINO config file
-curl -L https://raw.githubusercontent.com/IDEA-Research/GroundingDINO/main/groundingdino/config/GroundingDINO_SwinT_OGC.py ^
-  -o models\groundingdino\GroundingDINO_SwinT_OGC.py
-```
 
 ```bash
 python -m utils.data_labeling.vlm_labeling.autolabel --config configs/labeling/fall_hazard_objects.yaml --source utils/data_labeling/datasample/raw_images --out utils/data_labeling/datasample/dino_labels
@@ -141,6 +128,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
