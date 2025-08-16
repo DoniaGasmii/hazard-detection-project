@@ -1,61 +1,63 @@
 # Data Labeling Utilities
 
 This folder contains helper scripts and resources for generating and managing annotations for the **hazard detection** project.  
-The overall labeling strategy follows an **active learning process**, where the model selectively queries the most informative samples, and an *oracle* provides the labels.
 
-<img width="578" height="425" alt="image" src="https://github.com/user-attachments/assets/3b4d5c5c-bd69-415c-bbdb-32fc0d47b22c" />
+We currently support **two complementary strategies** for labeling:
+
+1. **Class-specific detectors + merger**  
+   Train/fine-tune small YOLO/Roboflow models per hazard type, run them on raw data, then **merge predictions** into unified YOLO labels.  
+   → Good for *closed-set classes* where you already have strong models.
+
+2. **Open-vocabulary VLM backend (GroundingDINO)**  
+   Use a **vision-language model** to detect objects via prompts/aliases (e.g., “hard hat”, “safety helmet”) and automatically map them to our fixed YOLO class list.  
+   → Good for *bootstrapping new classes* or rapidly labeling raw/unseen images.
+
+Both methods are combined into an **active learning loop**, where models pre-label data, humans review/correct, and retraining improves performance iteratively.
+
+---
 
 ## Labeling strategy
 
-In our setup:
-- **The labeling oracle** is composed of:
-  - Multiple **class‑specific object detection models** trained either locally or on Roboflow (one per hazard type, or multi‑class models where applicable).
-  - A **human review step** to validate and correct model predictions before they are added to the training set. Correcting labels is still manual labor but faster, easier and less expensive than annotating the whole dataset.
-- The process:
-  1. Start with a pool of unlabeled images.
-  2. Run each class‑specific model to generate predictions.
-  3. Merge predictions into a **unified multi‑class YOLO dataset**.
-  4. Manually review and fix incorrect labels.
-  5. Retrain the unified model and repeat the loop, **querying only the most valuable samples (the best next samples needed to improve the model will be the new pool)**.
+<img width="578" height="425" alt="image" src="https://github.com/user-attachments/assets/3b4d5c5c-bd69-415c-bbdb-32fc0d47b22c" />
 
-This approach speeds up labeling, reduces human effort, and ensures higher quality data by combining **automated pseudo‑labeling** and **human‑in‑the‑loop correction**.
+### A. Class-specific oracle (previous approach)
+- **Oracle** = multiple class-specific detection models (YOLOs or Roboflow exports).
+- **Steps:**
+  1. Start with a pool of unlabeled images.
+  2. Run each class-specific model (helmet, harness, ladder, …).
+  3. Merge their predictions into a **unified YOLO TXT dataset**.
+  4. Manually review & fix incorrect labels.
+  5. Retrain unified model → repeat.
+
+This reduces human effort by letting multiple small models act as the oracle.
+
+---
+
+### B. Open-vocabulary oracle (new approach)
+- **Oracle** = GroundingDINO (open-vocab detector).
+- **Steps:**
+  1. Prompt with class aliases (e.g., `"helmet"`, `"hard hat"`, `"safety helmet"`).
+  2. VLM outputs bounding boxes + phrases.
+  3. Map aliases → unified YOLO classes (`alias_map`).
+  4. Save YOLO `.txt` labels automatically.
+  5. Human review as usual.
+
+This allows bootstrapping labels for *all nine hazard classes at once*.
 
 ---
 
 ## Current scripts
 
 ### `pseudo_label_merger.py`
-This script automates the creation of **pseudo‑labeled datasets** by:
-1. Running inference on a set of unlabeled images using multiple **class‑specific Roboflow models** (e.g., helmet, harness, ladder).
-2. Collecting predictions from each model and merging them into **unified YOLO TXT annotations** according to a shared class mapping.
-3. Saving results into a YOLO‑style directory structure:
-   
-**Purpose:**  
-- Bootstrap a labeled dataset using pre‑trained class‑specific models as the oracle.
-- Serve as **Step 2 & 3** in the active learning loop, followed by human label review.
+Automates **pseudo-labeled datasets** using class-specific models:
+1. Runs inference on unlabeled images with multiple Roboflow models.
+2. Collects predictions and merges them into **unified YOLO TXT annotations**.
+3. Saves results into a YOLO-style dataset.
 
-**Quick run (default settings):**
+**Purpose:**  
+- Bootstrap labeled data from multiple weak or specialized models.  
+- Acts as **Step 2 & 3** in the active learning loop.
+
+**Quick run:**
 ```bash
 python pseudo_label_merger.py
-```
-**Customize for your own setup:**
-
-Before running, open the script and update:
-
-- **`API_KEY`** → your Roboflow **Private API key**.  
-- **`CLASS_MAP`** → your unified class list with numeric IDs.  
-- **`MODELS`** → Roboflow project slugs, version numbers, and associated classes.  
-- **`IMAGES_DIR`** → path to your folder of raw unlabeled images.  
-- **`OUTPUT_DIR`** → where labeled YOLO data will be saved.  
-- **`CONF_THRESHOLD`** → *(optional)* minimum confidence score for keeping predictions.
-
-Once configured, place your raw images in `IMAGES_DIR` and run the script.
-
-
-## Data sample
-
-The `data_sample` folder contains a small subset of images (`raw_images/`) for testing and debugging.  
-
-
-
-
