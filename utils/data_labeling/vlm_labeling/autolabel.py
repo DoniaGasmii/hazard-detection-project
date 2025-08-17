@@ -8,11 +8,16 @@ import yaml
 from PIL import Image
 
 from groundingdino.util.inference import load_image, annotate
-from .backends.groundingdino_backend import GroundingDINOBackend
 from .io_yolo import write_yolo_labels
 from .postprocess import classwise_nms  # alias filter + canonicalize + NMS
 
-BACKENDS = {"groundingdino": GroundingDINOBackend}
+from .backends.yoloworld_backend import YOLOWorldBackend
+from .backends.groundingdino_backend import GroundingDINOBackend
+
+BACKENDS = {
+    "groundingdino": GroundingDINOBackend,
+    "yoloworld": YOLOWorldBackend,
+}
 
 
 def main():
@@ -73,10 +78,7 @@ def main():
         _, image_rgb = load_image(str(img))
 
         # Inference timing (per image)
-        t0 = time.time()
         dets = backend.predict(image_rgb, prompts)  # raw phrases
-        infer_s = time.time() - t0
-        t_total += infer_s
 
         # Post-process: filter to our classes, canonical names, class-wise NMS
         W, H = Image.open(img).size
@@ -88,8 +90,7 @@ def main():
         )
         total_kept += len(kept)
 
-        print(f"[autolabel] {idx:04d}/{len(images)} {img.name}: "
-              f"infer={infer_s:.3f}s raw={len(dets)} kept={len(kept)}")
+        print(f"[autolabel] {idx:04d}/{len(images)} {img.name}: raw={len(dets)} kept={len(kept)}")
 
         # Build a lightweight view for writer (supports canonical labels)
         class Simple:
@@ -100,7 +101,7 @@ def main():
                 self.cls_id = k.cls_id
 
         kept_view = [Simple(k) for k in kept]
-        write_yolo_labels(img, kept_view, canon_alias_map, labels_dir.as_posix())
+        write_yolo_labels(img, kept_view, canon_alias_map, labels_dir.as_posix(), nms_iou=args.nms_iou  )
 
         # Optional visualization
         if args.save and kept:
@@ -109,7 +110,7 @@ def main():
                 logits_np = np.array([k.score for k in kept], dtype=np.float32)
                 boxes_t = torch.from_numpy(boxes_np) if len(boxes_np) else torch.empty((0, 4), dtype=torch.float32)
                 logits_t = torch.from_numpy(logits_np) if len(logits_np) else torch.empty((0,), dtype=torch.float32)
-                phrases = [f"{k.label} {k.score:.2f}" for k in kept]  # canonical label for viz
+                phrases = [f"{k.label}" for k in kept]  # canonical label for viz
 
                 img_rgb = np.array(Image.open(img).convert("RGB"))
                 annotated = annotate(image_source=img_rgb, boxes=boxes_t, logits=logits_t, phrases=phrases)

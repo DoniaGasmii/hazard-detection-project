@@ -5,6 +5,13 @@ backend:
   text_thr: 0.25
   device: cuda
 
+# backend:
+#   weights_path: models/yoloworld/weights.pt
+#   config_path:  models/yoloworld/config.yaml
+#   box_thr: 0.35
+#   text_thr: 0.25
+#   device: cpu
+
 
 classes:
   names:
