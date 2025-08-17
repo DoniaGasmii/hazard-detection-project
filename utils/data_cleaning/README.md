@@ -24,3 +24,12 @@ python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels
 ```bash
 python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels --start 5
 ```
+
+- **Shuffle first, then rename:**
+```bash
+python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels --shuffle
+```
+- **Shuffle reproducibly:**
+```bash
+python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels --shuffle --seed 42
+```
