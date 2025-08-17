@@ -1,38 +1,26 @@
-# Augmentation CLI – Visualize YOLO Image Augmentations
+# Data Cleaning
 
-A command-line tool to **visualize before/after** image augmentations for YOLO-format datasets.  
-It uses functions from `augmentation_functions.py` and helpers from `visualizations/draw.py`.  
-No files are saved — results are shown side-by-side in a Matplotlib window.
-
----
-
-## 📂 Available Augmentations
-
-- `rotation` – Random rotation
-- `brightness_noise` – Adjust brightness/contrast + Gaussian noise
-- `occlusion` – Coarse dropout (simulate occlusion)
-- `motion_blur` – Motion blur effect
-- `color_jitter` – Change brightness, contrast, saturation, hue
-- `distortion` – Lens distortion
-- `zoom_out` – Zoom out with padding
-- `fog` – Fog overlay
-- `rain` – Synthetic rain streaks
+This folder contains preprocessing and cleaning scripts for preparing datasets.  
+More scripts will be added here later as the pipeline grows.
 
 ---
 
-## ⚙️ Usage
+##  Current Scripts
 
+### `rename_images.py`
+Renames images in a folder sequentially (`0.jpg, 1.jpg, 2.jpg...`).  
+If a YOLO labels folder is provided, it also renames the corresponding `.txt` files to keep image–label pairs aligned.
+
+#### Usage
+- Rename images only:
 ```bash
-python augment_cli.py \
-  --image path/to/image.jpg \
-  --label path/to/label.txt \
-  --augmentation <augmentation_name>
+python utils/data_cleaning/rename_images.py ./data/images
 ```
-#### Example:
+- Rename images and YOLO labels:
 ```bash
-python augment_cli.py \
-  --image ../test_image/images/train/test_image.jpg \
-  --label ../test_image/yolo_labels/train/test_label.txt \
-  --augmentation fog
+python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels
 ```
-This will show a side-by-side before/after visualization of the fog effect on the test image.
+- Start numbering at `5`:
+```bash
+python utils/data_cleaning/rename_images.py ./data/images --labels ./data/labels --start 5
+```
