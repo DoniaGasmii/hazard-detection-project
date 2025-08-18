@@ -93,7 +93,7 @@ OUTPUT_DIR/
 ├── images/
 ├── labels/
 └── data.yaml
----
+```
 
 
 
@@ -139,6 +139,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
