@@ -7,3 +7,7 @@ pyyaml
 tqdm
 roboflow
 Pillow
+streamlit
+plotly
+pandas
+scikit-learn
