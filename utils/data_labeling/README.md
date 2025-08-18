@@ -45,48 +45,59 @@ This reduces human effort by letting multiple small models act as the oracle.
 This allows bootstrapping labels for *all objects at once*.
 
 ---
-
 ## Current scripts
 
-We provide two complementary labeling oracles:
+We provide **two families of labeling oracles**:
 
 ---
 
-### 1. Class-specific Oracle → `pseudo_label_merger.py`
+### 1. Class-specific Oracle
 
-This script automates **pseudo-labeled datasets** using multiple class-specific models (YOLO/Roboflow):
+#### a) Per-class Roboflow scripts → `class_oracles/`
+Each hazard type (helmet, harness, ladder, …) has its **own script** that:
+1. Loads the corresponding Roboflow model.  
+2. Runs inference on raw images.  
+3. Writes YOLO `.txt` labels for just that class.  
 
-1. Runs inference on unlabeled images with each hazard-specific model (e.g., helmet, harness, ladder).  
-2. Collects predictions from all models.  
-3. Merges them into **unified YOLO TXT annotations** following a shared class map.  
-4. Saves results into a YOLO-style dataset structure.
+**Usage example:**
+```bash
+python class_oracles/helmet_oracle.py
+python class_oracles/harness_oracle.py
+```
+This makes debugging easier (e.g., checking why *scaffolding* is often missed) and allows selective re-runs when only one class needs updating.
 
-**Purpose:**  
-- Bootstrap a labeled dataset when you already have specialized detectors.  
-- Acts as the **oracle** in the active learning loop.
-
-**Quick run:**
+**Output**
+Labels are saved into per-class folders under `outputs/`, ready for review or merging.
 ```bash
 python pseudo_label_merger.py
-```
+```bash
 **Before running, edit the script to set:**
+- `API_KEY` → your Roboflow private key  
+- `CLASS_MAP` → dictionary of unified class IDs  
+- `MODELS` → list of Roboflow project slugs, version numbers, and classes  
+- `IMAGES_DIR` / `OUTPUT_DIR`  
 
-- **`API_KEY`** → your Roboflow private key  
-- **`CLASS_MAP`** → dictionary of your unified class IDs  
-- **`MODELS`** → list of Roboflow project slugs, version numbers, and classes  
-- **`IMAGES_DIR`** → path to unlabeled images  
-- **`OUTPUT_DIR`** → where the labeled YOLO dataset will be written  
-- **`CONF_THRESHOLD`** → *(optional)* minimum confidence for keeping detections  
----
-
-**Output structure**
-
+**Output structure:**
 ```bash
 OUTPUT_DIR/
-├── images/   # copies of your input images
-├── labels/   # YOLO .txt labels (merged)
-└── data.yaml # dataset stub for YOLO training (you should set it up)
-```
+├── images/
+├── labels/
+└── data.yaml
+
+---
+
+### b) Multi-class merger → `pseudo_label_merger.py`
+This script merges the outputs from all class-specific scripts (or directly queries Roboflow projects, depending on config).
+
+1. Runs inference on unlabeled images with each hazard-specific model.  
+2. Collects predictions from all models.  
+3. Merges them into **unified YOLO TXT annotations** following a shared class map.  
+4. Saves results into a YOLO-style dataset structure.  
+
+### Quick run
+
+
+
 ### 2. Open-vocabulary Oracle → `vlm_labeling/autolabel.py`
 
 This script uses an **open-vocabulary detector** (GroundingDINO backend by default) to auto-label images based on text prompts and class aliases.
@@ -129,6 +140,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
