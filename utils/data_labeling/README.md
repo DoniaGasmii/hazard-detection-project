@@ -68,6 +68,16 @@ This makes debugging easier (e.g., checking why *scaffolding* is often missed) a
 
 **Output**
 Labels are saved into per-class folders under `outputs/`, ready for review or merging.
+
+### b) Multi-class merger → `pseudo_label_merger.py`
+This script merges the outputs from all class-specific scripts (or directly queries Roboflow projects, depending on config).
+
+1. Runs inference on unlabeled images with each hazard-specific model.  
+2. Collects predictions from all models.  
+3. Merges them into **unified YOLO TXT annotations** following a shared class map.  
+4. Saves results into a YOLO-style dataset structure.  
+
+### Quick run
 ```bash
 python pseudo_label_merger.py
 ```bash
@@ -83,18 +93,7 @@ OUTPUT_DIR/
 ├── images/
 ├── labels/
 └── data.yaml
-
 ---
-
-### b) Multi-class merger → `pseudo_label_merger.py`
-This script merges the outputs from all class-specific scripts (or directly queries Roboflow projects, depending on config).
-
-1. Runs inference on unlabeled images with each hazard-specific model.  
-2. Collects predictions from all models.  
-3. Merges them into **unified YOLO TXT annotations** following a shared class map.  
-4. Saves results into a YOLO-style dataset structure.  
-
-### Quick run
 
 
 
@@ -120,8 +119,8 @@ pip install pycocotools-windows
 
 ```bash
 python -m utils.data_labeling.vlm_labeling.autolabel --config configs/labeling/fall_hazard_objects.yaml --source utils/data_labeling/data_sample/raw_images --out utils/data_labeling/data_sample/dino_labels --save
-
 ```
+
 **Config file: `configs/labeling/fall_hazard_objects.yaml`**
 
 - Defines the **9 hazard classes** and their aliases.  
@@ -140,6 +139,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
