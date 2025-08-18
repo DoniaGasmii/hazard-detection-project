@@ -80,7 +80,7 @@ This script merges the outputs from all class-specific scripts (or directly quer
 ### Quick run
 ```bash
 python pseudo_label_merger.py
-```bash
+```
 **Before running, edit the script to set:**
 - `API_KEY` → your Roboflow private key  
 - `CLASS_MAP` → dictionary of unified class IDs  
@@ -139,6 +139,7 @@ datasample/autolabel/dino/
 │   └── ...
 └── data.yaml   # dataset stub for YOLO training
 ```
+
 
 
 
