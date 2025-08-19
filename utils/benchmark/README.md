@@ -2,7 +2,7 @@
 
 ## Run
 ```bash
-streamlit run utils/benchmark/streamlit_benchmark_app.py
+streamlit run utils/benchmark/streamlit_benchmark_app.py --server.enableXsrfProtection=false
 ```
 ## Use
 
@@ -10,3 +10,4 @@ streamlit run utils/benchmark/streamlit_benchmark_app.py
 2. (Optional) Upload **errors CSV** with `model,true,pred[,confidence]` for confusion matrix.  
 3. Choose **Group by**, **Color by**, **Epoch column**, and **Metrics** in the sidebar.  
 4. Explore interactive **bar/line/box** plots, summary tables, and errors view.  
+
