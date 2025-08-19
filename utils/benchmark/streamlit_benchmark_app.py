@@ -6,6 +6,9 @@ import numpy as np
 import plotly.express as px
 import streamlit as st
 from PIL import Image
+import torch
+import cv2
+from ultralytics import YOLO
 
 # ---- Optional: Paired palette via matplotlib
 import matplotlib.pyplot as plt
@@ -21,7 +24,7 @@ st.caption("Upload training logs, test eval artifacts, or comparison CSVs. Explo
 
 # ---- Sidebar: section + uploaders + palette
 with st.sidebar:
-    section = st.radio("Section", ["Training", "Test", "Compare"], index=1)
+    section = st.radio("Section", ["Training", "Test", "Compare", "Inference"], index=1)
 
     if section == "Training":
         train_csv = st.file_uploader("Training logs CSV", type=["csv"], key="train_csv")
@@ -37,6 +40,14 @@ with st.sidebar:
         comp_csvs = st.file_uploader(
             "Upload CSVs to compare (must include `model`)", type=["csv"], accept_multiple_files=True, key="compare_csvs"
         )
+
+    elif section == "Inference":
+        inf_image = st.file_uploader("Image", type=["png","jpg","jpeg"], key="inf_img")
+        weight_files = st.file_uploader("YOLOv8 weights (one or more .pt files)", type=["pt"], accept_multiple_files=True, key="inf_wts")
+        conf_th = st.slider("Confidence", 0.0, 1.0, 0.25, 0.01)
+        iou_th  = st.slider("IoU", 0.0, 1.0, 0.45, 0.01)
+        imgsz   = st.number_input("Image size (0 = model default)", min_value=0, max_value=2048, value=0, step=32)
+
 
     st.markdown("---")
     st.header("Display options")
@@ -135,6 +146,88 @@ def normalize_metrics_df(df: pd.DataFrame) -> pd.DataFrame:
     if "model" not in df.columns:
         df["model"] = df.get("run", "model")
     return df
+
+# ---------- Drawing helpers ----------
+def draw_boxes_on_image(img_bgr, boxes, labels, color=(0, 255, 0), thickness=2):
+    out = img_bgr.copy()
+    for (x1, y1, x2, y2), lab in zip(boxes, labels):
+        cv2.rectangle(out, (int(x1), int(y1)), (int(x2), int(y2)), color, thickness)
+        if lab:
+            cv2.putText(out, str(lab), (int(x1), int(y1)-6), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2, cv2.LINE_AA)
+    return out
+
+def to_bgr(np_img):
+    # Streamlit returns RGB; OpenCV uses BGR
+    if np_img.ndim == 3 and np_img.shape[2] == 3:
+        return cv2.cvtColor(np_img, cv2.COLOR_RGB2BGR)
+    return np_img
+
+def to_rgb(np_img):
+    if np_img.ndim == 3 and np_img.shape[2] == 3:
+        return cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
+    return np_img
+
+# ---------- Feature map capture ----------
+class FeatureHook:
+    def __init__(self, module):
+        self.feat = None
+        self.hook = module.register_forward_hook(self.hook_fn)
+    def hook_fn(self, module, inp, out):
+        # out: [B, C, H, W]
+        with torch.no_grad():
+            fmap = out.detach().float()
+            fmap = fmap.mean(dim=1, keepdim=True)  # average over channels
+            self.feat = fmap  # store
+    def close(self):
+        self.hook.remove()
+
+def list_named_layers(model: YOLO):
+    # Return list of (name, module) for the underlying nn.Module
+    layers = []
+    for name, m in model.model.named_modules():
+        # skip the root '' module
+        if name != "" and hasattr(m, "forward"):
+            layers.append((name, m))
+    return layers
+
+def compute_featuremap_overlay(model: YOLO, img_bgr, layer_name: str, conf=0.25, iou=0.45, imgsz=0):
+    """
+    Runs a forward pass with a hook on `layer_name`, returns (overlay_rgb, raw_heatmap_gray_norm)
+    """
+    model.model.eval()
+    named = dict(list_named_layers(model))
+    if layer_name not in named:
+        raise ValueError(f"Layer '{layer_name}' not found. Pick one of: {list(named.keys())[:8]} ...")
+
+    # register hook
+    fh = FeatureHook(named[layer_name])
+
+    # Ultralytics prediction (no saving to disk); single image forward
+    # Note: stream=False returns a list of Results
+    res = model.predict(source=[img_bgr[..., ::-1]], conf=conf, iou=iou, imgsz=imgsz or None, verbose=False)
+    # grab the feature map captured
+    fmap = fh.feat  # [1,1,h,w]
+    fh.close()
+    if fmap is None:
+        raise RuntimeError("Hook captured no feature map (unexpected).")
+
+    fmap = fmap[0, 0].cpu().numpy()
+    # normalize 0..1
+    fm_min, fm_max = float(fmap.min()), float(fmap.max()) if float(fmap.max()) != 0 else 1.0
+    fmap_norm = (fmap - fm_min) / (fm_max - fm_min + 1e-8)
+
+    # resize to image size
+    H, W = img_bgr.shape[:2]
+    fmap_up = cv2.resize(fmap_norm, (W, H), interpolation=cv2.INTER_CUBIC)
+
+    # colorize heatmap
+    heat_u8 = np.uint8(255 * fmap_up)
+    heat_color = cv2.applyColorMap(heat_u8, cv2.COLORMAP_JET)  # BGR heat
+    overlay = cv2.addWeighted(img_bgr, 0.55, heat_color, 0.45, 0)
+
+    # also return predictions (boxes + labels) for convenience
+    return overlay, fmap_up, res
+
 
 # =========================
 # TRAINING
@@ -330,5 +423,91 @@ elif section == "Compare":
                     st.plotly_chart(fig2, use_container_width=True)
                     st.caption("Shows spread across runs/folds. Wide boxes or many outliers = unstable.")
 
+# =========================
+# COMPARE (multi‑CSV)
+# =========================
+
+elif section == "Inference":
+    st.header("🔍 Inference (boxes + feature map)")
+    if inf_image is None or not weight_files:
+        st.info("Upload an image and at least one YOLOv8 weights file in the sidebar.")
+    else:
+        # Load image
+        pil = Image.open(inf_image).convert("RGB")
+        base_rgb = np.array(pil)
+        base_bgr = to_bgr(base_rgb)
+
+        # Let user pick which model to visualize a feature map from
+        # Load all models first (cached per filename)
+        @st.cache_resource
+        def load_model_from_bytes(name, bytes_obj):
+            tmp_path = os.path.join(st.session_state.get("_tmp_dir_", "/tmp"), name)
+            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+            with open(tmp_path, "wb") as f:
+                f.write(bytes_obj.getbuffer())
+            return YOLO(tmp_path)
+
+        models = []
+        for wf in weight_files:
+            try:
+                mdl = load_model_from_bytes(wf.name, wf)
+                models.append((wf.name, mdl))
+            except Exception as e:
+                st.error(f"Failed to load {wf.name}: {e}")
+
+        if not models:
+            st.stop()
+
+        # Choose model for featuremap visualization (predictions will be shown for all)
+        model_names = [n for (n, _) in models]
+        fm_model_name = st.selectbox("Choose model for feature‑map", options=model_names, index=0)
+
+        # List layers
+        fm_model = dict(models)[fm_model_name]
+        layer_list = [n for (n, m) in list_named_layers(fm_model)]
+        # Heuristic: pick a mid‑neck layer by default
+        default_idx = 0
+        for i, n in enumerate(layer_list):
+            if any(k in n.lower() for k in ["neck", "c2f", "spp", "sppe", "stage"]):
+                default_idx = i
+                break
+        layer_name = st.selectbox("Layer for feature‑map", options=layer_list, index=default_idx)
+
+        # Run buttons
+        run = st.button("Run inference")
+
+        if run:
+            # 1) Feature‑map overlay for the selected model
+            with st.spinner("Running inference + capturing feature map..."):
+                try:
+                    overlay_bgr, fmap_gray, res = compute_featuremap_overlay(
+                        fm_model, base_bgr, layer_name, conf=conf_th, iou=iou_th, imgsz=imgsz
+                    )
+                except Exception as e:
+                    st.error(f"Feature‑map failed: {e}")
+                    overlay_bgr, fmap_gray, res = base_bgr, None, []
+
+            # 2) Draw boxes for each model (separate panels)
+            st.markdown("### Predictions")
+            cols = st.columns(len(models))
+            for i, (name, mdl) in enumerate(models):
+                with cols[i]:
+                    results = mdl.predict(source=[base_rgb], conf=conf_th, iou=iou_th, imgsz=imgsz or None, verbose=False)
+                    r = results[0]
+                    boxes_xyxy = r.boxes.xyxy.cpu().numpy() if r.boxes is not None else np.zeros((0,4))
+                    cls_ids = r.boxes.cls.cpu().numpy().astype(int) if r.boxes is not None and r.boxes.cls is not None else []
+                    names = r.names if hasattr(r, "names") else {}
+                    labels = [names.get(int(c), str(int(c))) for c in cls_ids] if isinstance(names, dict) else [str(int(c)) for c in cls_ids]
+                    boxed = draw_boxes_on_image(base_bgr, boxes_xyxy, labels, color=(0, 255, 0))
+                    st.image(to_rgb(boxed), caption=f"{name} — {len(boxes_xyxy)} boxes", use_container_width =True)
+
+            # 3) Feature‑map panel
+            st.markdown("### Feature‑map (avg across channels)")
+            st.image(to_rgb(overlay_bgr), caption=f"{fm_model_name} · layer: {layer_name}", use_container_width =True)
+            st.caption("Tip: try different layers (backbone vs neck vs head) to see how activation shifts.")
+
+
 st.markdown("---")
 st.caption(f"Palette set to **{palette_name}**. Change it in the sidebar.")
+
+
