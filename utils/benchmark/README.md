@@ -2,8 +2,7 @@
 
 ## Run
 ```bash
-pip install -r utils/benchmark/interactive/requirements.txt
-streamlit run utils/benchmark/interactive/streamlit_benchmark_app.py
+streamlit run utils/benchmark/streamlit_benchmark_app.py
 ```
 ## Use
 
