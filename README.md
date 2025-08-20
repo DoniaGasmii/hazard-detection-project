@@ -2,7 +2,7 @@
 
 This repository contains experiments and utility scripts developed during my internship at the **Distributed Intelligent Systems and Algorithms Laboratory (DISAL)**, focusing on **computer vision** tasks.
 
-## 📂 Structure
+## Structure
 
 - **notebooks/**
   - Jupyter notebooks for various experiments and training runs:
@@ -21,7 +21,7 @@ This repository contains experiments and utility scripts developed during my int
 - `.gitignore` – Git ignore rules.
 - `README.md` – Project documentation (you are here).
 
-## 🚀 Getting Started
+## Getting Started
 
 1. Install dependencies:
    ```bash
